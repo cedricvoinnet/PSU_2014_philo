@@ -2,11 +2,13 @@ CC =		gcc
 
 RM =		rm -f
 
-CFLAGS =	-Wall -Werror -Wextra
+CFLAGS =	-Wall -Werror -Wextra -g3
 
 LDFLAGS =	-lpthread
 
-SRC =		main.c
+SRC =		main.c \
+		table.c \
+		philosopher_job.c
 
 OBJ =		$(SRC:.c=.o)
 
@@ -15,10 +17,7 @@ NAME =		philo
 all:		$(NAME)
 
 $(NAME):	$(OBJ)
-	$(CC) $(OBJ) -o $(NAME)
-
-%.o:		%.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ -c $<
+	$(CC) $(LDFLAGS) $(OBJ) -o $(NAME)
 
 clean:
 	$(RM) $(OBJ)
