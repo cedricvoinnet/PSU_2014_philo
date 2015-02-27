@@ -4,11 +4,12 @@ RM =		rm -f
 
 CFLAGS =	-Wall -Werror -Wextra -g3
 
-LDFLAGS =	-lpthread
+LDFLAGS =	-lpthread  -lSDLmain -lSDL -lSDL_image
 
 SRC =		main.c \
+		sdl.c \
 		table.c \
-		philosopher_job.c
+		philosopher_job.c \
 
 OBJ =		$(SRC:.c=.o)
 

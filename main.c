@@ -5,11 +5,12 @@
 ** Login   <voinne_c@epitech.net>
 ** 
 ** Started on  Mon Feb 23 12:58:20 2015 Cédric Voinnet
-** Last update Tue Feb 24 17:50:13 2015 Cédric Voinnet
+** Last update Fri Feb 27 15:26:36 2015 Cédric Voinnet
 */
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <pthread.h>
 #include "philo.h"
 
@@ -22,7 +23,6 @@ int		exit_philosophers(t_philo **philosophers)
     {
       if (pthread_join(philosophers[nb]->philo_thread, NULL))
 	return (-1);
-      printf("n°%d - rice remaining: %d\n", philosophers[nb]->philo_num + 1, philosophers[nb]->rice);
       free(philosophers[nb]);
       ++nb;
     }
@@ -30,7 +30,36 @@ int		exit_philosophers(t_philo **philosophers)
   return (0);
 }
 
-int		create_philosophers()
+void	inspector(t_philo **philosophers, t_gui *gui)
+{
+  int	nb;
+
+  nb = 0;
+  while (g_rice_nb)
+    {
+      while (nb != NB_PHILO)
+      	{
+      	  if (philosophers[nb]->job_done)
+      	    {
+	      if (philosophers[nb]->left_rod && philosophers[nb]->right_rod)
+		philosophers[nb]->aff_state = EAT;
+	      else if (philosophers[nb]->left_rod || philosophers[nb]->right_rod)
+		philosophers[nb]->aff_state = THINK;
+	      else
+		philosophers[nb]->aff_state = STANDBY;
+      	      printf("Philosopher n°%d - state: %d - rice remaining: %d\n",
+		     philosophers[nb]->philo_num + 1, philosophers[nb]->aff_state, philosophers[nb]->rice);
+	      ++nb;
+      	    }
+	}
+      change_status(gui, philosophers);
+      printf("---------------\n");
+      pthread_cond_broadcast(&g_cond_turn);
+      nb = 0;
+    }
+}
+
+int		create_philosophers(t_gui *gui)
 {
   int		nb;
   t_philo	**philosophers;
@@ -43,15 +72,13 @@ int		create_philosophers()
       if (!(philosophers[nb] = malloc(sizeof(t_philo))))
 	return (-1);
       philosophers[nb]->philo_num = nb;
-      philosophers[nb]->rice = 1;
+      philosophers[nb]->rice = NB_RICE;
       if (pthread_create(&philosophers[nb]->philo_thread, NULL,
 			 &philosopher, philosophers[nb]))
-	{
-	  printf("Can't create threads\nAbort\n");
-	  return (-1);
-	}
+	return (-1);
       ++nb;
     }
+  inspector(philosophers, gui);
   if (exit_philosophers(philosophers))
     return (-1);
   return (0);
@@ -59,13 +86,19 @@ int		create_philosophers()
 
 int	main()
 {
+  t_gui	gui;
+
+  //  if (!(
+  init_gui(&gui);//))
+  //    return (-1);
   if (init_table())
     return (-1);
-  if (create_philosophers())
+  if (create_philosophers(&gui))
     {
       destroy_table();
       return (-1);
     }
   destroy_table();
+  exit_gui(&gui);
   return (0);
 }

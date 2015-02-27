@@ -5,7 +5,7 @@
 ** Login   <voinne_c@epitech.net>
 ** 
 ** Started on  Tue Feb 24 13:36:16 2015 Cédric Voinnet
-** Last update Tue Feb 24 17:47:39 2015 Cédric Voinnet
+** Last update Fri Feb 27 15:09:06 2015 Cédric Voinnet
 */
 
 #include <unistd.h>
@@ -15,13 +15,13 @@
 
 void	left_hand(t_philo *my)
 {
-  if (!pthread_mutex_trylock(&g_table[my->philo_num]) && !my->left_rod)
+  if (!my->left_rod && !pthread_mutex_trylock(&g_table[my->philo_num]))
     my->left_rod = 1;
 }
 
 void	right_hand(t_philo *my)
 {
-  if (!pthread_mutex_trylock(&g_table[my->philo_num + 1 % 7]) && !my->right_rod)
+  if (!my->right_rod && !pthread_mutex_trylock(&g_table[(my->philo_num + 1) % NB_PHILO]))
     my->right_rod = 1;
 }
 
@@ -29,10 +29,16 @@ void	eat(t_philo *philo)
 {
   if (philo->left_rod && philo->right_rod)
     {
-      //      printf("n°%d a 2baguettes\n", philo->philo_num);
       --philo->rice;
       philo->state = SLEEPY;
+      pthread_mutex_lock(&g_mutex_rice);
+      --g_rice_nb;
+      pthread_mutex_unlock(&g_mutex_rice);
     }
+}
+
+void	drop_rods(t_philo *philo)
+{
   if (philo->left_rod)
     {
       philo->left_rod = 0;
@@ -41,8 +47,8 @@ void	eat(t_philo *philo)
   if (philo->right_rod)
     {
       philo->right_rod = 0;
-      pthread_mutex_unlock(&g_table[philo->philo_num + 1 % 7]);
-    }    
+      pthread_mutex_unlock(&g_table[(philo->philo_num + 1) % NB_PHILO]);
+    }
 }
 
 void	take_rods(t_philo *philo)
@@ -51,13 +57,15 @@ void	take_rods(t_philo *philo)
     {
       right_hand(philo);
       sleep(1);
-      left_hand(philo);
+      if (philo->rice || !philo->right_rod)
+	left_hand(philo);
     }
   else
     {
       left_hand(philo);
       sleep(1);
-      right_hand(philo);
+      if (philo->rice || !philo->left_rod)
+	right_hand(philo);
     }
 }
 
@@ -67,13 +75,20 @@ void		*philosopher(void *arg)
 
   philo = arg;
   philo->state = HUNGRY;
-  /* while (philo->rice) */
-  /*   { */
-  /* printf("Philosopher n°%d - rice remaining: %d\n", philo->philo_num, philo->rice); */
-  if (philo->state == HUNGRY)
-    take_rods(philo);
-  philo->state = HUNGRY;
-  eat(philo);
-  /* } */
+  philo->aff_state = STANDBY;
+  pthread_mutex_lock(&g_mut_turn);
+  while (g_rice_nb)
+    {
+      philo->job_done = 1;
+      pthread_cond_wait(&g_cond_turn, &g_mut_turn);
+      philo->job_done = 0;
+      drop_rods(philo);
+      if (philo->state == HUNGRY)
+	take_rods(philo);
+      philo->state = HUNGRY;
+      eat(philo);
+    }
+  pthread_mutex_unlock(&g_mut_turn);
+  philo->job_done = 1;
   return (NULL);
 }
