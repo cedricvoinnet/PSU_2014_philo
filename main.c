@@ -5,7 +5,7 @@
 ** Login   <voinne_c@epitech.net>
 ** 
 ** Started on  Mon Feb 23 12:58:20 2015 Cédric Voinnet
-** Last update Fri Feb 27 15:26:36 2015 Cédric Voinnet
+** Last update Sat Feb 28 12:11:38 2015 Cédric Voinnet
 */
 
 #include <stdio.h>
@@ -52,6 +52,7 @@ void	inspector(t_philo **philosophers, t_gui *gui)
 	      ++nb;
       	    }
 	}
+      sleep(1);
       change_status(gui, philosophers);
       printf("---------------\n");
       pthread_cond_broadcast(&g_cond_turn);
@@ -88,14 +89,13 @@ int	main()
 {
   t_gui	gui;
 
-  //  if (!(
-  init_gui(&gui);//))
-  //    return (-1);
+  init_gui(&gui);
   if (init_table())
     return (-1);
   if (create_philosophers(&gui))
     {
       destroy_table();
+      exit_gui(&gui);
       return (-1);
     }
   destroy_table();

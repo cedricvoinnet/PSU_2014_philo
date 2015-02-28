@@ -9,6 +9,7 @@ LDFLAGS =	-lpthread  -lSDLmain -lSDL -lSDL_image
 SRC =		main.c \
 		sdl.c \
 		table.c \
+		rods.c \
 		philosopher_job.c \
 
 OBJ =		$(SRC:.c=.o)

@@ -5,7 +5,7 @@
 ** Login   <voinne_c@epitech.net>
 ** 
 ** Started on  Tue Feb 24 08:38:46 2015 Cédric Voinnet
-** Last update Fri Feb 27 15:27:29 2015 Cédric Voinnet
+** Last update Sat Feb 28 12:12:48 2015 Cédric Voinnet
 */
 
 #ifndef PHILO_H_
@@ -15,7 +15,7 @@
 #include <SDL/SDL_image.h>
 
 # define NB_PHILO	7
-# define NB_RICE	3
+# define NB_RICE	5
 
 extern int		g_rice_nb;
 extern pthread_mutex_t	*g_table;
@@ -58,6 +58,12 @@ typedef struct		s_philo
 int		init_table();
 void		destroy_table();
 void		*philosopher(void *);
+
+void	drop_rods(t_philo *);
+void	take_rods(t_philo *);
+
+void	left_hand(t_philo *);
+void	right_hand(t_philo *);
 
 SDL_Surface	**init_philos(SDL_Rect *, SDL_Surface *);
 SDL_Rect	*init_pos();

@@ -19,7 +19,8 @@ int	init_gui(t_gui *gui)
       return (-1);
     }
   SDL_WM_SetCaption("Philosophons un peu, voulez vous  ...", NULL);
-  SDL_FillRect(gui->screen, NULL, SDL_MapRGB(gui->screen->format, 17, 206, 112));
+  SDL_FillRect(gui->screen, NULL, SDL_MapRGB(gui->screen->format,
+					     17, 206, 112));
   SDL_Flip(gui->screen);
   if (!(gui->pos = init_pos()))
     return (-1);

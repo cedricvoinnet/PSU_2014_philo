@@ -5,7 +5,7 @@
 ** Login   <voinne_c@epitech.net>
 ** 
 ** Started on  Tue Feb 24 13:36:16 2015 Cédric Voinnet
-** Last update Fri Feb 27 15:09:06 2015 Cédric Voinnet
+** Last update Sat Feb 28 12:07:46 2015 Cédric Voinnet
 */
 
 #include <unistd.h>
@@ -21,7 +21,8 @@ void	left_hand(t_philo *my)
 
 void	right_hand(t_philo *my)
 {
-  if (!my->right_rod && !pthread_mutex_trylock(&g_table[(my->philo_num + 1) % NB_PHILO]))
+  if (!my->right_rod && !pthread_mutex_trylock(
+					       &g_table[(my->philo_num + 1) % NB_PHILO]))
     my->right_rod = 1;
 }
 
@@ -37,38 +38,6 @@ void	eat(t_philo *philo)
     }
 }
 
-void	drop_rods(t_philo *philo)
-{
-  if (philo->left_rod)
-    {
-      philo->left_rod = 0;
-      pthread_mutex_unlock(&g_table[philo->philo_num]);
-    }
-  if (philo->right_rod)
-    {
-      philo->right_rod = 0;
-      pthread_mutex_unlock(&g_table[(philo->philo_num + 1) % NB_PHILO]);
-    }
-}
-
-void	take_rods(t_philo *philo)
-{
-  if (philo->philo_num % 2)
-    {
-      right_hand(philo);
-      sleep(1);
-      if (philo->rice || !philo->right_rod)
-	left_hand(philo);
-    }
-  else
-    {
-      left_hand(philo);
-      sleep(1);
-      if (philo->rice || !philo->left_rod)
-	right_hand(philo);
-    }
-}
-
 void		*philosopher(void *arg)
 {
   t_philo	*philo;
@@ -76,6 +45,7 @@ void		*philosopher(void *arg)
   philo = arg;
   philo->state = HUNGRY;
   philo->aff_state = STANDBY;
+  drop_rods(philo);
   pthread_mutex_lock(&g_mut_turn);
   while (g_rice_nb)
     {
@@ -90,5 +60,5 @@ void		*philosopher(void *arg)
     }
   pthread_mutex_unlock(&g_mut_turn);
   philo->job_done = 1;
-  return (NULL);
+  pthread_exit(NULL);
 }
